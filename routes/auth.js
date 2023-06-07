@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { Client, auth } = require("twitter-api-sdk");
 const { UserAuthKeyPre, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, AuthErrCode, LoginPageUrl, REDIS_PWD, callback, ERR_CODE, TWITTER_REPLY_REDIS_KEY } = require('../config')
-const { handleError } = require('../src/utils/helper')
+const { handleError, randomString } = require('../src/utils/helper')
 const { get, set, del, rPush } = require('../src/db/redis')
 const UserDB = require('../src/db/api/user')
 
@@ -30,8 +30,8 @@ router.get('/register', async (req, res) => {
         if (account) {
             return handleError(res, 'Account registerd', 'Account registerd', ERR_CODE.USER_HAS_REGISTERED);
         }
-        const state = nearId;
-        await set(state, 1);
+        const state = randomString;
+        await set(state, nearId);
         const authUrl = authClient.generateAuthURL({
             state,
             code_challenge_method: "plain",
@@ -59,6 +59,7 @@ router.get("/callback", async (req, res) => {
             });
             // store new bind account
             await UserDB.registerNewAccount(userInfo.data.id, userInfo.data.username, nearId);
+            await del(state);
             res.redirect(LoginPageUrl + '?state=ok');
         }else{
             return res.redirect(LoginPageUrl);
