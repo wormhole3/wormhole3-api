@@ -1,5 +1,13 @@
 const { execute } = require("../pool");
 
+async function registerNewAccount(twitterId, twitterUsername, nearId) {
+  let sql = `INSERT IGNORE INTO user_info (twitter_id,near_id,twitter_username) VALUES(?,?,?);`;
+  const res = await execute(sql, [twitterId, nearId, twitterUsername]);
+  if (!res) {
+      return 0;
+  }
+      return res.affectedRows
+}
 /**
  * Get bind account by twitter account.
  * Use for checking whether the twitter account has been created a steem account.
@@ -7,29 +15,9 @@ const { execute } = require("../pool");
  */
 async function getAccountByTwitterId(twitterId) {
   let sql =
-    `SELECT
-      m.twitter_id AS twitterId,
-      m.twitter_name AS twitterName,
-      m.twitter_username AS twitterUsername,
-      m.steem_id AS steemId,
-      m.eth_address AS ethAddress,
-      m.web25ETH,
-      m.profile_img AS profileImg,
-      r.public_key AS publicKey,
-      m.reputation,
-      m.has_received_nft as hasReceivedNft,
-      m.has_minted_rp as hasMintedRP,
-      m.bind_steem as bindSteem,
-      m.is_registry as isRegistry,
-      m.source as source
-    FROM
-      twitter_steem_mapping AS m,
-      post_register AS r
-    WHERE
-      m.twitter_id = ?
-      AND m.is_del = 0
-      AND r.is_del = 0
-      AND r.post_id = m.post_id`;
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername, status 
+    FROM user_info 
+    WHERE twitter_id = ? AND is_del=0;`;
   const res = await execute(sql, [twitterId]);
   if (!res || res.length === 0) {
     return null
@@ -39,25 +27,9 @@ async function getAccountByTwitterId(twitterId) {
 
 async function getAccountByTwitterUsername(username) {
   let sql =
-    `SELECT
-      m.twitter_id AS twitterId,
-      m.twitter_name AS twitterName,
-      m.twitter_username AS twitterUsername,
-      m.steem_id AS steemId,
-      m.eth_address AS ethAddress,
-      m.web25ETH,
-      m.profile_img AS profileImg,
-      m.reputation,
-      m.has_received_nft as hasReceivedNft,
-      m.has_minted_rp as hasMintedRP,
-      m.bind_steem as bindSteem,
-      m.is_registry as isRegistry,
-      m.source as source
-    FROM
-      twitter_steem_mapping AS m
-    WHERE
-      m.twitter_username = ?
-      AND m.is_del = 0`;
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername, status 
+    FROM user_info 
+    WHERE twitter_username = ? AND is_del=0;`;
   const res = await execute(sql, [username]);
   if (!res || res.length === 0) {
     return null
@@ -65,23 +37,21 @@ async function getAccountByTwitterUsername(username) {
   return res[0]
 }
 
-async function getPendingUserByTwitterUsernmae(username) {
-  let sql = `SELECT twitter_id as twitterId, username as twitterUsername, profile_img as profileImg, is_registed as isRegisted FROM pending_registry WHERE username='${username}'`;
-  const res = await execute(sql);
+async function getAccountByNearId(nearId) {
+  let sql =
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername, status 
+    FROM user_info 
+    WHERE near_id = ? AND is_del=0;`;
+  const res = await execute(sql, [nearId]);
   if (!res || res.length === 0) {
     return null
   }
   return res[0]
 }
 
-async function updateTwitterUsername(user) {
-  let sql = `UPDATE twitter_steem_mapping SET twitter_username=?, twitter_name=? WHERE twitter_id=?`;
-  await execute(sql, [user.username, user.name, user.id]);
-}
-
 module.exports = {
+  registerNewAccount,
   getAccountByTwitterId,
   getAccountByTwitterUsername,
-  updateTwitterUsername,
-  getPendingUserByTwitterUsernmae
+  getAccountByNearId
 };
