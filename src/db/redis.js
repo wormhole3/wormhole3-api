@@ -6,6 +6,7 @@ const { REDIS_EXPIRE_TIME, REDIS_PWD } = require("../../config");
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
 const REDIS_PORT = process.env.REDIS_PORT || "6379";
 const REDIS_KEY = "RedisPrimaryKey";
+const NEAR_PRE = "near_";
 
 var client = redis.createClient({
   url: `redis://:${REDIS_PWD}@${REDIS_HOST}:${REDIS_PORT}`
@@ -32,7 +33,7 @@ async function getKey() {
 }
 
 async function get(key) {
-  return await client.get(key)
+  return await client.get(NEAR_PRE + key)
 }
 
 /**
@@ -43,9 +44,9 @@ async function get(key) {
  */
 async function set(key, value, needExpire = true) {
   try {
-    await client.set(key, value);
+    await client.set(NEAR_PRE + key, value);
     if (needExpire) {
-      await client.expire(key, REDIS_EXPIRE_TIME);
+      await client.expire(NEAR_PRE + key, REDIS_EXPIRE_TIME);
     }
   } catch (error) {
     console.error(`Set value into Redis failed. Key: ${key}, Value: ${value}`);
@@ -56,7 +57,7 @@ async function set(key, value, needExpire = true) {
 
 async function del(key) {
   try {
-    await client.del(key);
+    await client.del(NEAR_PRE + key);
   } catch (error) {
     console.error(`Delete the key[${key}] from Redis failed.`);
     throw error;
@@ -66,7 +67,7 @@ async function del(key) {
 
 function rPush(key, value) {
   try {
-    client.rPush(key, value);
+    client.rPush(NEAR_PRE + key, value);
   } catch (error) {
     console.error(`lPush the key[${key}] from Redis failed.`);
     throw error;
@@ -75,7 +76,7 @@ function rPush(key, value) {
 
 async function lPop(key) {
   try {
-    return await client.lPop(key);
+    return await client.lPop(NEAR_PRE + key);
   } catch (error) {
     console.error(`rPop the key[${key}] from Redis failed.`);
     throw error;
