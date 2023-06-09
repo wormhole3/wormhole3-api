@@ -77,6 +77,15 @@ const hexToString = (str) => {
   return val;
 }
 
+function randomString(e) {    
+  e = e || 32;
+  var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789",
+  a = t.length,
+  n = "";
+  for (i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n
+}
+
 const format = (time) => {
   return moment(time).format("YYYY-MM-DD HH:mm:ss");
 };
@@ -136,5 +145,6 @@ module.exports = {
   stringToHex,
   hexToString,
   getTitle,
-  sleep2
+  sleep2,
+  randomString
 }
