@@ -30,7 +30,7 @@ router.get('/register', async (req, res) => {
         if (account) {
             return handleError(res, 'Account registerd', 'Account registerd', ERR_CODE.USER_HAS_REGISTERED);
         }
-        const state = randomString;
+        const state = randomString();
         await set(state, nearId);
         const authUrl = authClient.generateAuthURL({
             state,

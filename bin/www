@@ -7,14 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('warmhole-server:server');
 var http = require('http');
-const { updateTagByPolling } = require('../src/db/cache/tags')
-const  { updatePostByPolling } = require('../src/db/cache/posts')
-const { pollingFaucet } = require('../src/utils/airdrip')
 
 // start regular monitor task
-updateTagByPolling()
-updatePostByPolling()
-// pollingFaucet()
 
 /**
  * Get port from environment and store in Express.
