@@ -6,7 +6,7 @@ const { handleError, randomString } = require('../src/utils/helper')
 const { get, set, del, rPush } = require('../src/db/redis')
 const UserDB = require('../src/db/api/user')
 
-const scopes = ["tweet.read", "users.read", "offline.access", "follows.read","space.read", "like.read"]
+const scopes = ["tweet.read", "users.read", "follows.read","space.read", "like.read"]
 
 const authClient = new auth.OAuth2User({
     client_id: TWITTER_CLIENT_ID,
