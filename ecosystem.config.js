@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: "Wormhole3",
+        name: "Wormhole3-api-for-near",
         instances: 1,
         exec_mode: "cluster",
         script: "yarn",
