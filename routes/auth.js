@@ -37,7 +37,7 @@ router.get('/register', async (req, res) => {
             code_challenge_method: "plain",
             code_challenge: "wormhole3_near"
         });
-        return res.status(200).json(authUrl);
+        return res.status(200).json({authUrl, nonce: state});
     }catch(e) {
         return handleError(res, e, 'login fail')
     }
@@ -58,7 +58,7 @@ router.get("/callback", async (req, res) => {
                 "user.fields": ["id", "name", "username", "profile_image_url", "verified", "public_metrics", "created_at"]
             });
             // store new bind account
-            await UserDB.registerNewAccount(userInfo.data.id, userInfo.data.username, nearId);
+            await UserDB.registerNewAccount(userInfo.data.id, userInfo.data.username, nearId, state);
             await del(state);
             res.redirect(LoginPageUrl + '?state=ok');
         }else{
