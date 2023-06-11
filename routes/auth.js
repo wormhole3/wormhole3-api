@@ -38,6 +38,7 @@ router.get('/register', async (req, res) => {
             code_challenge_method: "plain",
             code_challenge: "wormhole3_near"
         });
+        console.log(1122, authUrl, state)
         return res.status(200).json({authUrl, nonce: state});
     }catch(e) {
         return handleError(res, e, 'login fail')
@@ -47,7 +48,6 @@ router.get('/register', async (req, res) => {
 router.get("/callback", async (req, res) => {
     try {
         const { code, state, error } = req.query;
-        console.log(12, code, error)
         if (error && error === 'access_denied') {
             return res.redirect(LoginPageUrl);
         }
