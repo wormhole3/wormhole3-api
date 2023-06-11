@@ -47,6 +47,7 @@ router.get('/register', async (req, res) => {
 router.get("/callback", async (req, res) => {
     try {
         const { code, state, error } = req.query;
+        console.log(12, code, error)
         if (error && error === 'access_denied') {
             return res.redirect(LoginPageUrl);
         }
