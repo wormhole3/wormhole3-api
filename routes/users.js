@@ -10,6 +10,20 @@ router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
+router.get('/byNonce', async (req, res) => {
+  const { nonce } = req.query;
+  if (nonce) {
+    const record = await UserDB.getTwitterAuthRecordByNonce(nonce);
+    if (record) {
+      return res.status(200).json(record);
+    }else{
+      return handleError(res, "User not exist", 'User not exist', ERR_CODE.USER_NOT_EXIST);
+    }
+  }else {
+    return handleError(res, "Invalid nonce", 'Parameter missing, need nonce', 301)
+  }
+})
+
 router.get('/byTwitterId', async (req, res) => {
   const { twitterId } = req.query;
   if (twitterId) {
@@ -53,8 +67,6 @@ router.get('/byNearId', async (req, res) => {
   }
 })
 
-router.get('/searchUsers', async (req, res) => {
-    return res.status(200).json({});
-})
+
 
 module.exports = router;
