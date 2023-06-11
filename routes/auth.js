@@ -32,13 +32,11 @@ router.get('/register', async (req, res) => {
         }
         const state = randomString();
         await set(state, nearId);
-        console.log(1111, state, nearId)
         const authUrl = authClient.generateAuthURL({
             state,
             code_challenge_method: "plain",
             code_challenge: "wormhole3_near"
         });
-        console.log(1122, authUrl, state)
         return res.status(200).json({authUrl, nonce: state});
     }catch(e) {
         return handleError(res, e, 'login fail')
@@ -52,7 +50,6 @@ router.get("/callback", async (req, res) => {
             return res.redirect(LoginPageUrl);
         }
         const nearId = await get(state)
-        console.log(22, nearId, state);
         if (nearId) {
             const result = await authClient.requestAccessToken(code);
             const token = result.token;
