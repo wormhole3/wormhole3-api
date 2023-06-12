@@ -2,7 +2,7 @@ const { execute } = require("../pool");
 
 async function registerNewAccount(twitterId, twitterUsername, twitterName, profileImg, nearId, nonce) {
   let sql = `INSERT INTO twitter_auth_record (twitter_id,twitter_username,twitter_name, profile_img, near_id,nonce) VALUES(?,?,?,?,?,?)
-      ON DUPLICATE KEY UPDATE twitter_username=?, twitter_name=?, profile_img=?, near_id=?, nonce=?;`;
+      ON DUPLICATE KEY UPDATE twitter_username=?, twitter_name=?, profile_img=?, near_id=?, nonce=?, status=IF(status=2,2,1);`;
   const res = await execute(sql, [twitterId, twitterUsername, twitterName, profileImg, nearId, nonce, twitterUsername, twitterName, profileImg, nearId, nonce]);
   if (!res) {
       return 0;
