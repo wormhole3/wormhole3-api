@@ -11,7 +11,7 @@ async function registerNewAccount(twitterId, twitterUsername, twitterName, profi
 }
 
 async function getTwitterAuthRecordByNonce(nonce) {
-  let sql = `SELECT twitter_id as twitterId, near_id as nearId, status FROM twitter_auth_record WHERE nonce=?`;
+  let sql = `SELECT twitter_id as twitterId, twitter_username as twitterUsername, twitter_name as twitterName, profile_img as profileImg, near_id as nearId, status FROM twitter_auth_record WHERE nonce=?`;
   const res = await execute(sql, [nonce]);
   if (res && res.length > 0) {
     return res[0]
@@ -26,7 +26,7 @@ async function getTwitterAuthRecordByNonce(nonce) {
  */
 async function getAccountByTwitterId(twitterId) {
   let sql =
-    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername 
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername , twitter_username as twitterUsername, twitter_name as twitterName, profile_img as profileImg
     FROM user_info 
     WHERE twitter_id = ? AND is_del=0;`;
   const res = await execute(sql, [twitterId]);
@@ -38,7 +38,7 @@ async function getAccountByTwitterId(twitterId) {
 
 async function getAccountByTwitterUsername(username) {
   let sql =
-    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername 
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername , twitter_username as twitterUsername, twitter_name as twitterName, profile_img as profileImg
     FROM user_info 
     WHERE twitter_username = ? AND is_del=0;`;
   const res = await execute(sql, [username]);
@@ -50,7 +50,7 @@ async function getAccountByTwitterUsername(username) {
 
 async function getAccountByNearId(nearId) {
   let sql =
-    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername 
+    `SELECT twitter_id as twitterId, near_id as nearId, twitter_username as twitterUsername , twitter_username as twitterUsername, twitter_name as twitterName, profile_img as profileImg
     FROM user_info 
     WHERE near_id = ? AND is_del=0;`;
   const res = await execute(sql, [nearId]);
