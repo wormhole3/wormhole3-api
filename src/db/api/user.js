@@ -1,10 +1,9 @@
 const { execute } = require("../pool");
 
-async function registerNewAccount(twitterId, twitterUsername, nearId, nonce) {
-  console.log(333, twitterId, twitterUsername, nearId, nonce)
-  let sql = `INSERT INTO twitter_auth_record (twitter_id,twitter_username,near_id,nonce) VALUES(?,?,?,?)
-      ON DUPLICATE KEY UPDATE twitter_username=?, near_id=?, nonce=?;`;
-  const res = await execute(sql, [twitterId, twitterUsername, nearId, nonce, twitterUsername, nearId, nonce]);
+async function registerNewAccount(twitterId, twitterUsername, twitterName, profileImg, nearId, nonce) {
+  let sql = `INSERT INTO twitter_auth_record (twitter_id,twitter_username,twitter_name, profile_img, near_id,nonce) VALUES(?,?,?,?,?,?)
+      ON DUPLICATE KEY UPDATE twitter_username=?, twitter_name=, profile_img=?, near_id=?, nonce=?;`;
+  const res = await execute(sql, [twitterId, twitterUsername, twitterName, profileImg, nearId, nonce, twitterUsername, twitterName, profileImg, nearId, nonce]);
   if (!res) {
       return 0;
   }
