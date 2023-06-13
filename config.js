@@ -12,7 +12,7 @@ const LoginPageUrl = process.env.LoginPageUrl;
 const callback = process.env.callback;
 
 // Redis expire time(second).
-const REDIS_EXPIRE_TIME = 1000 * 60;
+const REDIS_EXPIRE_TIME = 1000 * 300;
 
 const ERR_CODE = {
 
