@@ -47,9 +47,11 @@ router.get("/callback", async (req, res) => {
     try {
         const { code, state, error } = req.query;
         if (error && error === 'access_denied') {
+            console.log('user denied twitter login')
             return res.redirect(LoginPageUrl);
         }
         const nearId = await get(state)
+        console.log('receive twitter call back:', state, nearId)
         if (nearId) {
             const result = await authClient.requestAccessToken(code);
             const token = result.token;
