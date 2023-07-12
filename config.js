@@ -80,6 +80,8 @@ const TWITTER_REPLY_REDIS_KEY = 'WH3-REPLY-ACCOUNT-KEY';
 // wormhole3 twitter id, use this steem account to post twitters those author not registered
 const Wormhole3TwitterId = '1550046181283483648';
 
+const UserTokenExpireTime = 3600 * 2; // 2 hours
+
 module.exports = {
     REDIS_PWD,
     DB_PASSWORD,
@@ -94,5 +96,6 @@ module.exports = {
     TWITTER_CLIENT_ID,
     TWITTER_CLIENT_SECRET,
     TWITTER_REPLY_REDIS_KEY,
-    Wormhole3TwitterId
+    Wormhole3TwitterId,
+    UserTokenExpireTime
 }

@@ -1,4 +1,6 @@
 const moment = require("moment");
+const { TwitterApi } = require("twitter-api-v2");
+
 const b64uLookup = {
   "/": "_",
   _: "/",
@@ -77,11 +79,11 @@ const hexToString = (str) => {
   return val;
 }
 
-function randomString(e) {    
+function randomString(e) {
   e = e || 32;
   var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789",
-  a = t.length,
-  n = "";
+    a = t.length,
+    n = "";
   for (i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
   return n
 }
@@ -134,6 +136,15 @@ function getTitle(content, len, word = 6) {
   return result.substring(0, len) + "...";
 }
 
+function getAccessTokenClient() {
+  return new TwitterApi({
+    appKey: process.env.CONSUMER_TOKEN,
+    appSecret: process.env.CONSUMER_SECRET,
+    accessToken: process.env.ACCESS_TOKEN,
+    accessSecret: process.env.ACCESS_TOKEN_SECRET,
+  });
+}
+
 module.exports = {
   b64uEnc,
   b64uDec,
@@ -146,5 +157,6 @@ module.exports = {
   hexToString,
   getTitle,
   sleep2,
-  randomString
+  randomString,
+  getAccessTokenClient
 }

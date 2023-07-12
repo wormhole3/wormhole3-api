@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
 const { TwitterApi } = require("twitter-api-v2");
-const { UserAuthKeyPre, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, AuthErrCode, LoginPageUrl, REDIS_PWD, callback, ERR_CODE, TWITTER_REPLY_REDIS_KEY } = require('../config')
+const { UserAuthKeyPre, UserTokenExpireTime, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, AuthErrCode, LoginPageUrl, REDIS_PWD, callback, ERR_CODE, TWITTER_REPLY_REDIS_KEY } = require('../config')
 const { handleError, randomString } = require('../src/utils/helper')
 const { get, set, del, rPush } = require('../src/db/redis')
 const UserDB = require('../src/db/api/user')
 
-const UserTokenExpireTime = 3600 * 2; // 2 hours
+
 
 const scopes = ["tweet.read", "tweet.write", "users.read", "offline.access", "follows.read", "follows.write", "space.read", "like.read", "like.write"]
 
