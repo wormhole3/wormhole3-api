@@ -20,7 +20,7 @@ const ERR_CODE = {
     WRONG_TASK_CATEGORY: 302,
     TWEET_CONTENT_TOPIC_MISMATCH: 303,
     CURATION_TASK_MISMATCH: 304,
-    CURATION_NOT_EXIST:305,
+    CURATION_NOT_EXIST: 305,
     INSUFFICIENT_CONTENT: 306,
     INSUFFICIENT_RC: 307,
     IS_LIKED: 308,
@@ -54,7 +54,9 @@ const AuthErrCode = {
     UserCancelAuth: 403,
     InvalidCode: 405,
     RegisterOutTime: 406,
-    HasRegistered: 407
+    HasRegistered: 407,
+    InvalidVerifier: 408,
+    RefreshOAuthErr: 409
 }
 
 /**
