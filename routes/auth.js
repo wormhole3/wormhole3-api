@@ -89,13 +89,15 @@ router.get("/getToken", async (req, res) => {
 });
 
 router.post("/refresh", async (req, res) => {
-    const { refreshToken, state } = req.body;
+    let { refreshToken, state } = req.body;
     if (refreshToken && state) {
         try {
             const { accessToken, refreshToken: newRefreshToken, expiresIn } = await client.refreshOAuth2Token(refreshToken);
             // update user info, expired in 2 hours
+            await del(state);
+            state = randomString();
             await set(state, JSON.stringify({ accessToken, refreshToken: newRefreshToken, expiresIn }), UserTokenExpireTime);
-            return res.status(200).json({ accessToken, refreshToken: newRefreshToken, expiresIn });
+            return res.status(200).json({ accessToken, refreshToken: newRefreshToken, expiresIn, state });
         } catch (e) {
             await del(state);
             console.log("refresh error:", e);
