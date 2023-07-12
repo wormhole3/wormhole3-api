@@ -5,8 +5,7 @@ const { UserAuthKeyPre, UserTokenExpireTime, TWITTER_CLIENT_ID, TWITTER_CLIENT_S
 const { handleError, randomString } = require('../src/utils/helper')
 const { get, set, del, rPush } = require('../src/db/redis')
 const UserDB = require('../src/db/api/user')
-
-
+const { checkState } = require('./utils')
 
 const scopes = ["tweet.read", "tweet.write", "users.read", "offline.access", "follows.read", "follows.write", "space.read", "like.read", "like.write"]
 
@@ -75,20 +74,17 @@ router.get("/callback", async (req, res) => {
     }
 });
 
-router.get("/getToken", async (req, res) => {
-    const { state } = req.query;
-    if (state) {
-        const data = await get(state);
-        if (data) {
-            return res.status(200).send(data);
-        }else {
-            return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.TokenExpired);
-        }
+router.post("/getToken", checkState, async (req, res) => {
+    const { state } = req.body;
+    const data = await get(state);
+    if (data) {
+        return res.status(200).send(data);
+    }else {
+        return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.TokenExpired);
     }
-    return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.InvalidState);
 });
 
-router.post("/refresh", async (req, res) => {
+router.post("/refresh", checkState, async (req, res) => {
     let { refreshToken, state } = req.body;
     if (refreshToken && state) {
         try {
