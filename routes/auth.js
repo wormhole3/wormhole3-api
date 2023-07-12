@@ -6,11 +6,13 @@ const { handleError, randomString } = require('../src/utils/helper')
 const { get, set, del, rPush } = require('../src/db/redis')
 const UserDB = require('../src/db/api/user')
 
-const scopes = ["tweet.read", "users.read", "follows.read", "space.read", "like.read", "offline.access"]
+const UserTokenExpireTime = 3600 * 2; // 2 hours
+
+const scopes = ["tweet.read", "tweet.write", "users.read", "offline.access", "follows.read", "follows.write", "space.read", "like.read", "like.write"]
 
 const client = new TwitterApi({ clientId: TWITTER_CLIENT_ID, clientSecret: TWITTER_CLIENT_SECRET });
 /**
- * Register new account with nearId
+ * Register new account with nearId or login with exists user
  * This method will cache the near id and generate twitter auth link to frontend
  * It will return error code: 
  */
@@ -28,7 +30,7 @@ router.get('/register', async (req, res) => {
 
         const { url, codeVerifier, state: resultState } = client.generateOAuth2AuthLink(callback, { scope: scopes, state });
         await set(state, JSON.stringify({ nearId, codeVerifier, state: resultState }));
-        return res.status(200).json({ authUrl: url, nonce: state });
+        return res.status(200).json({ authUrl: url });
     } catch (e) {
         return handleError(res, e, 'login fail')
     }
@@ -60,11 +62,8 @@ router.get("/callback", async (req, res) => {
                 // console.log("userInfo:", userInfo);
                 // console.log("================================");
                 await UserDB.registerNewAccount(userInfo.id, userInfo.username, userInfo.name, userInfo.profile_image_url, user.nearId, state);
-                req.session.regenerate(function () {
-                    req.session.user = { state, nearId: user.nearId };
-                });
-                await set(state, JSON.stringify({ accessToken, refreshToken, nearId: user.nearId }));
-                res.redirect(LoginPageUrl + '?state=ok');
+                await set(state, JSON.stringify({ accessToken, refreshToken, expiresIn, nearId: user.nearId}), UserTokenExpireTime);
+                res.redirect(LoginPageUrl + '?state=' + state);
             })
             .catch((e) => {
                 console.log("loginWithOAuth2 error:", e);
@@ -77,33 +76,28 @@ router.get("/callback", async (req, res) => {
 });
 
 router.get("/getToken", async (req, res) => {
-    const { user } = req.session;
-    const { nonce } = req.query;
-    if (user && nonce) {
-        let data = null;
-        try {
-            data = JSON.parse(await get(nonce));
-        } catch (e) {
-            return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.InvalidState);
-        }
-        let { state, nearId } = user;
-        const { accessToken, refreshToken } = data;
-        if (state === nonce && nearId === data.nearId) {
-            await del(state);
-            return res.status(200).json({ accessToken, refreshToken, nearId });
+    const { state } = req.query;
+    if (state) {
+        const data = await get(state);
+        if (data) {
+            return res.status(200).send(data);
+        }else {
+            return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.TokenExpired);
         }
     }
     return handleError(res, 'Invalid State', 'Invalid State', AuthErrCode.InvalidState);
 });
 
-router.get("/refresh", async (req, res) => {
-    const { user } = req.session;
-    const { refreshToken } = req.query;
-    if (user && refreshToken) {
+router.post("/refresh", async (req, res) => {
+    const { refreshToken, state } = req.body;
+    if (refreshToken && state) {
         try {
-            const { accessToken, refreshToken: newRefreshToken } = await client.refreshOAuth2Token(refreshToken);
-            return res.status(200).json({ accessToken, refreshToken: newRefreshToken, nearId: user.nearId });
+            const { accessToken, refreshToken: newRefreshToken, expiresIn } = await client.refreshOAuth2Token(refreshToken);
+            // update user info, expired in 2 hours
+            await set(state, JSON.stringify({ accessToken, refreshToken: newRefreshToken, expiresIn }), UserTokenExpireTime);
+            return res.status(200).json({ accessToken, refreshToken: newRefreshToken, expiresIn });
         } catch (e) {
+            await del(state);
             console.log("refresh error:", e);
             return handleError(res, 'Refresh OAuth2 Token Error', 'Refresh OAuth2 Token Error', AuthErrCode.RefreshOAuthErr);
         }
