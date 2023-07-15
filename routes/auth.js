@@ -21,10 +21,10 @@ router.get('/register', async (req, res) => {
         if (!nearId) {
             return handleError(res, 'Null param', 'Null param', ERR_CODE.PARAMS_ERROR);
         }
-        const account = await UserDB.getAccountByNearId(nearId);
-        if (account) {
-            return handleError(res, 'Account registerd', 'Account registerd', ERR_CODE.USER_HAS_REGISTERED);
-        }
+        // const account = await UserDB.getAccountByNearId(nearId);
+        // if (account) {
+        //     return handleError(res, 'Account registerd', 'Account registerd', ERR_CODE.USER_HAS_REGISTERED);
+        // }
         const state = randomString();
 
         const { url, codeVerifier, state: resultState } = client.generateOAuth2AuthLink(callback, { scope: scopes, state });
@@ -60,8 +60,14 @@ router.get("/callback", async (req, res) => {
                 // console.log("expiresIn:", expiresIn);
                 // console.log("userInfo:", userInfo);
                 // console.log("================================");
-                await UserDB.registerNewAccount(userInfo.id, userInfo.username, userInfo.name, userInfo.profile_image_url, user.nearId, state);
-                await set(state, JSON.stringify({ accessToken, refreshToken, expiresIn, nearId: user.nearId}), UserTokenExpireTime);
+                // check and update userinfo
+                const storedUser = await UserDB.getAccountByTwitterId(userInfo.id);
+                if (!storedUser) {
+                    await UserDB.registerNewAccount(userInfo.id, userInfo.username, userInfo.name, userInfo.profile_image_url, user.nearId, state);
+                }else {
+                    await UserDB.updateAccount(userInfo.id, userInfo.name, userInfo.username, userInfo.profile_image_url)
+                }
+                await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken, expiresIn, nearId: user.nearId}), UserTokenExpireTime);
                 res.redirect(LoginPageUrl + '?state=' + state);
             })
             .catch((e) => {
@@ -74,7 +80,7 @@ router.get("/callback", async (req, res) => {
     }
 });
 
-router.post("/getToken", checkState, async (req, res) => {
+router.post("/getUserInfo", checkState, async (req, res) => {
     const { state } = req.body;
     const data = await get(state);
     if (data) {
@@ -89,11 +95,17 @@ router.post("/refresh", checkState, async (req, res) => {
     if (refreshToken && state) {
         try {
             const { accessToken, refreshToken: newRefreshToken, expiresIn } = await client.refreshOAuth2Token(refreshToken);
+            // update user client
+            const userClient = await TwitterApi(accessToken);
+            const userInfo = await userClient.v2.me({
+                "user.fields": ["id", "name", "username", "profile_image_url", "verified", "public_metrics", "created_at"]
+            });
+            await UserDB.updateAccount(userInfo.id, userInfo.name, userInfo.username, userInfo.profile_image_url)
             // update user info, expired in 2 hours
             await del(state);
             state = randomString();
-            await set(state, JSON.stringify({ accessToken, refreshToken: newRefreshToken, expiresIn }), UserTokenExpireTime);
-            return res.status(200).json({ accessToken, refreshToken: newRefreshToken, expiresIn, state });
+            await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresIn }), UserTokenExpireTime);
+            return res.status(200).json({ nonce: state, twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresIn, state });
         } catch (e) {
             await del(state);
             console.log("refresh error:", e);

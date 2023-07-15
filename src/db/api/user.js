@@ -10,6 +10,15 @@ async function registerNewAccount(twitterId, twitterUsername, twitterName, profi
   return res.affectedRows
 }
 
+async function updateAccount(twitterId, name, username, profileImg) {
+  let sql = `UPDATE user_info SET twitter_name=?, twitter_username=?, profile_img=? WHERE twitter_id=?;`;
+  const res = await execute(sql, [name, username, profileImg, twitterId]);
+  if (!res) {
+    return 0;
+  }
+  return res.affectedRows;
+}
+
 async function getTwitterAuthRecordByNonce(nonce) {
   let sql = `SELECT twitter_id as twitterId, twitter_username as twitterUsername, twitter_name as twitterName, profile_img as profileImg, near_id as nearId, status FROM twitter_auth_record WHERE nonce=?`;
   const res = await execute(sql, [nonce]);
@@ -62,6 +71,7 @@ async function getAccountByNearId(nearId) {
 
 module.exports = {
   registerNewAccount,
+  updateAccount,
   getAccountByTwitterId,
   getAccountByTwitterUsername,
   getAccountByNearId,
