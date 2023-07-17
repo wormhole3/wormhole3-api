@@ -8,6 +8,7 @@ function checkState(req, res, next) {
         get(state).then((value) => {
             if (value) {
                 next();
+                return;
             } else {
                 return handleError(res, 'Invalid State', 'Invalid State', 401);
             }
@@ -15,8 +16,9 @@ function checkState(req, res, next) {
             console.log("checkState error:", e);
             return handleError(res, 'Invalid State', 'Invalid State', 401);
         });
+    }else {
+        return handleError(res, 'Invalid State', 'Invalid State', 402);
     }
-    return handleError(res, 'Invalid State', 'Invalid State', 402);
 }
 
 module.exports = {

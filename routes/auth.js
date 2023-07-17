@@ -67,7 +67,7 @@ router.get("/callback", async (req, res) => {
                 }else {
                     await UserDB.updateAccount(userInfo.id, userInfo.name, userInfo.username, userInfo.profile_image_url)
                 }
-                await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken, expiresIn, nearId: user.nearId}), UserTokenExpireTime);
+                await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken, expiresAt: Date.now() + expiresIn * 1000, nearId: user.nearId}), UserTokenExpireTime);
                 res.redirect(LoginPageUrl + '?state=' + state);
             })
             .catch((e) => {
@@ -104,8 +104,8 @@ router.post("/refresh", checkState, async (req, res) => {
             // update user info, expired in 2 hours
             await del(state);
             state = randomString();
-            await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresIn }), UserTokenExpireTime);
-            return res.status(200).json({ nonce: state, twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresIn, state });
+            await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresAt: Date.now() + expiresIn * 1000 }), UserTokenExpireTime);
+            return res.status(200).json({ nonce: state, twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken: newRefreshToken, expiresAt: Date.now() + expiresIn * 1000, state });
         } catch (e) {
             await del(state);
             console.log("refresh error:", e);
