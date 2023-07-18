@@ -29,7 +29,7 @@ router.get('/register', async (req, res) => {
 
         const { url, codeVerifier, state: resultState } = client.generateOAuth2AuthLink(callback, { scope: scopes, state });
         await set(state, JSON.stringify({ nearId, codeVerifier, state: resultState }));
-        return res.status(200).json({ authUrl: url });
+        return res.status(200).json({ authUrl: url, nonce: state });
     } catch (e) {
         return handleError(res, e, 'login fail')
     }
@@ -68,7 +68,7 @@ router.get("/callback", async (req, res) => {
                     await UserDB.updateAccount(userInfo.id, userInfo.name, userInfo.username, userInfo.profile_image_url)
                 }
                 await set(state, JSON.stringify({ twitterId: userInfo.id, twitterName: userInfo.name, twitterUsername: userInfo.username, profileImg: userInfo.profile_image_url, accessToken, refreshToken, expiresAt: Date.now() + expiresIn * 1000, nearId: user.nearId}), UserTokenExpireTime);
-                res.redirect(LoginPageUrl + '?state=' + state);
+                res.redirect(LoginPageUrl);
             })
             .catch((e) => {
                 console.log("loginWithOAuth2 error:", e);
@@ -96,7 +96,7 @@ router.post("/refresh", checkState, async (req, res) => {
         try {
             const { accessToken, refreshToken: newRefreshToken, expiresIn } = await client.refreshOAuth2Token(refreshToken);
             // update user client
-            const userClient = await TwitterApi(accessToken);
+            const userClient = new TwitterApi(accessToken);
             const userInfo = await userClient.v2.me({
                 "user.fields": ["id", "name", "username", "profile_image_url", "verified", "public_metrics", "created_at"]
             });
